@@ -1,7 +1,10 @@
 package com.example.demoopentracing.rest;
 
 import com.uber.jaeger.Configuration;
+import com.uber.jaeger.Configuration.SamplerConfiguration;
+import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.samplers.ProbabilisticSampler;
+import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -34,10 +37,15 @@ public class TracingContextListener implements ServletContextListener {
   @Produces
   @Singleton
   public static io.opentracing.Tracer jaegerTracer() {
-    logger.info(">>>> In jaegerTracer");
-    return new Configuration("wildfly-swarm-with-tracing", new Configuration.SamplerConfiguration(
-        ProbabilisticSampler.TYPE, 1),
-        new Configuration.ReporterConfiguration())
-        .getTracer();
+    logger.info("In jaegerTracer");
+    
+    String serviceName = "wildfly-swarm-tracing-demo";
+    SamplerConfiguration samplerConfiguration = new SamplerConfiguration(ProbabilisticSampler.TYPE, 1);
+    ReporterConfiguration reporterConfiguration = new ReporterConfiguration();
+    Configuration configuration = new Configuration(serviceName, samplerConfiguration, reporterConfiguration);
+
+    Tracer tracer = configuration.getTracer();
+
+    return tracer;
   }
 }
